@@ -1,5 +1,5 @@
 # BigData Testing Spark // Hadoop 
 
-Put youre notebooks in /notebooks/
+Put your notebooks in /notebooks/
 
 Get your data from /data/
