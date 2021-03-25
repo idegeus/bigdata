@@ -30,12 +30,15 @@ def titleTokeniser(title):
 # start the clock
 start = time.time()
 
+# read movies
 lines = sc.textFile(data_folder + "ml-latest-small/movies.csv")
+# apply tokensier to create RDD of words
 words = lines.flatMap(titleTokeniser)
-
+# reduce by word and count values
 wordCounts = words.map(lambda x: (x, 1)).reduceByKey(lambda x, y: x + y)
+# sort the results by count
 wordCountsSorted = wordCounts.map(lambda x: (x[1], x[0])).sortByKey(ascending=False)
-
+# collect results + print
 results = wordCountsSorted.collect()
 
 for result in results[0:15]:
