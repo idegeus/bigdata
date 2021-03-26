@@ -17,7 +17,7 @@ import org.junit.Test;
 public class RatingBroadcastJoinLocalTest extends HadoopLocalTestCase {
     
     protected void testJoin(HadoopJob job, boolean mapOnly) throws Exception {
-        
+
         File moviesFile = getTestTempFile("movies.csv");
         File ratingsFile = getTestTempFile("ratings.csv");
         File outputDir = getTestTempDir("output");
@@ -40,7 +40,7 @@ public class RatingBroadcastJoinLocalTest extends HadoopLocalTestCase {
     }
 
     Map<String, Double> readRatingsByGenre(File outputFile) throws IOException {
-        Map<String, Double> ratingsByGenre = new HashMap<>();//HashMultimap.create();
+        Map<String, Double> ratingsByGenre = new HashMap<>();
 
         Pattern sep = Pattern.compile("\t");
         for (String line : Files.readLines(outputFile, Charsets.UTF_8)) {
