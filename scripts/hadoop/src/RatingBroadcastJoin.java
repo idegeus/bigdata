@@ -64,7 +64,7 @@ public class RatingBroadcastJoin extends HadoopJob {
         return 0;
     }
     
-    static class MovieJoiner extends Mapper<Object, Text, Text, DoubleWritable> { //implements MapFunction<Integer, String, String, Integer> {
+    static class MovieJoiner extends Mapper<Object, Text, Text, DoubleWritable> {
 
         private static final Pattern sep = Pattern.compile(",");
         private static final Map<Integer, String> movies = new HashMap<>();
@@ -76,8 +76,8 @@ public class RatingBroadcastJoin extends HadoopJob {
             FileSystem fs = FileSystem.get(moviesFile, context.getConfiguration());
 
             try (BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(moviesFile))))) {
-                //br.readLine(); // skipping first line
                 String line;
+                
                 while ((line = br.readLine()) != null) {
                     String[] row = sep.split(line.replaceAll("\".*\"", "removed title"));
                     int movieId = Integer.parseInt(row[0]);
@@ -88,19 +88,16 @@ public class RatingBroadcastJoin extends HadoopJob {
                 }
             }
         }
-        //@Override
-        //public Collection<Record<String, Integer>> map(Record<Integer, String> input) {
+
         public void map(Object key, Text value, Mapper.Context context) throws IOException, InterruptedException {
 
             String[] row = sep.split(value.toString());
-            //System.out.println(row[1]);
             int movieId = Integer.parseInt(row[1]);
             Double rating = Double.parseDouble(row[2]);
 
             if (movies.containsKey(movieId)) {
                 String[] genres = movies.get(movieId).split("\\|");
                 for (String genre : genres) {
-                    //System.out.println(genre + ":" + movieId + ":" + rating.toString());
                     result.set(genre);
                     context.write(result, new DoubleWritable(rating));
                 }
@@ -113,13 +110,11 @@ public class RatingBroadcastJoin extends HadoopJob {
         private static final Multimap<String, Double[]> ratings = HashMultimap.create();
         private final Text result = new Text();
 
-        //@Override
-        //public Collection<Record<String, Integer>> reduce(String word, Collection<Integer> valueGroup) {
         public void reduce(Text key, Iterable<DoubleWritable> values, Context context) throws IOException, InterruptedException {
             for (DoubleWritable val : values) {
                 String genre = key.toString();
                 Double rating = val.get();
-                System.out.println(genre + ":" + rating);
+
                 if (ratings.containsKey(genre)) {
                     for (Double[] s : ratings.get(genre)) {
                         s[0] += rating;
