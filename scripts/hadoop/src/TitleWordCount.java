@@ -4,9 +4,7 @@ import nl.uva.bigdata.hadoop.HadoopJob;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
@@ -16,11 +14,6 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
@@ -57,7 +50,7 @@ public class TitleWordCount extends HadoopJob {
 
     public static class TokenizerMapper extends Mapper<Object, Text, Text, IntWritable> {
 
-        private static final Pattern sep = Pattern.compile(",");
+        private static final Pattern sep = Pattern.compile(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
 
         public void map(Object key, Text value, Mapper.Context context) throws IOException, InterruptedException {
             
