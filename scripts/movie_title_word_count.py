@@ -1,25 +1,31 @@
+import time
+# start the clock
+start = time.time()
+
 import findspark
 findspark.init()
 findspark.find()
 
-from pyspark import SparkConf, SparkContext
 import collections
 import re
-import time
+import os
 import numpy as np
 import nltk
 from nltk.corpus import stopwords
+from pyspark import SparkConf, SparkContext
 sw = stopwords.words("english")
 
-conf = SparkConf().setMaster("local").setAppName("WordCount")
-sc = SparkContext(conf = conf)
 
-data_folder = '/Users/benplatten/workspace/UvA_BD/bigdata/data/'
+conf = SparkConf().setMaster("local").setAppName("WordCount")
+sc = SparkContext.getOrCreate(conf = conf)
+
+data_folder = os.getcwd() + '/Documents/UvA/Big Data/uva-bigdata-course-2021-students/src/main/data/'
 
 
 # helper functions
 def titleTokeniser(title):
-    title = title.split(';') 
+    title = re.sub(r'"(\d+),(\d+)"', r'\1:\2', title)
+    title = title.split(',')
     title = str(title[1])
     title = ''.join([i for i in title if not i.isdigit()])
     title = title.lower().split()
@@ -28,10 +34,10 @@ def titleTokeniser(title):
     return title
 
 # start the clock
-start = time.time()
+#start = time.time()
 
 # read movies
-lines = sc.textFile(data_folder + "ml-latest-small/movies.csv")
+lines = sc.textFile(data_folder + "ml-latest/movies-synthetic.csv")
 # apply tokensier to create RDD of words
 words = lines.flatMap(titleTokeniser)
 # reduce by word and count values
@@ -49,5 +55,3 @@ for result in results[0:15]:
 # stop clock
 end = time.time()
 print("Time taken in seconds: " + str(end-start) + ' s')
-
-
