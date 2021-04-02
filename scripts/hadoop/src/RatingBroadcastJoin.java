@@ -102,22 +102,22 @@ public class RatingBroadcastJoin extends HadoopJob {
         private final Text result = new Text();
 
         public void reduce(Text key, Iterable<DoubleWritable> values, Context context) throws IOException, InterruptedException {
+            String genre = key.toString();
+
             for (DoubleWritable val : values) {
-                String genre = key.toString();
                 Double rating = val.get();
 
                 if (ratings.containsKey(genre)) {
                     Double[] s = ratings.get(genre);
                     s[0] += rating;
                     s[1] += 1.0;
-                    result.set(genre);
-                    context.write(result, new DoubleWritable(s[0] / s[1]));
                 } else {
                     ratings.put(genre, new Double[]{rating, 1.0});
-                    result.set(genre);
-                    context.write(result, new DoubleWritable(rating));
                 }
-            }            
+            }    
+            result.set(genre);
+            Double[] output = ratings.get(genre);
+            context.write(result, new DoubleWritable(output[0] / output[1]));
             
         }
     }
