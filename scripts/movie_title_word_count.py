@@ -24,7 +24,7 @@ data_folder = os.getcwd() + '/Documents/UvA/Big Data/uva-bigdata-course-2021-stu
 
 # helper functions
 def titleTokeniser(title):
-    title = re.sub(r'"(\d+),(\d+)"', r'\1:\2', title)
+    title = re.sub(r'(?!(([^"]*"){2})*[^"]*$),', '', title)
     title = title.split(',')
     title = str(title[1])
     title = ''.join([i for i in title if not i.isdigit()])

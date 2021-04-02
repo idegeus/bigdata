@@ -9,11 +9,12 @@ findspark.find()
 from pyspark import SparkConf, SparkContext
 import collections
 import re
+import os
 
 conf = SparkConf().setMaster("local").setAppName("AverageRating")
 sc = SparkContext.getOrCreate(conf = conf.set("spark.driver.maxResultSize", "4g"))
 
-data_folder = os.getcwd() + '/Documents/UvA/Big Data/uva-bigdata-course-2021-students/src/main/data/'
+data_folder = os.getcwd() + '/Documents/UvA/Big Data/code/uva-bigdata-course-2021-students/src/main/data/'
 
 
 # helper functions
@@ -21,7 +22,7 @@ def loadMovieGenres():
     movieGenres = {}
     with open(data_folder + "ml-latest/movies.csv", "r", encoding='ISO-8859-1', errors='ignore') as f:
         for line in f:
-            fields = re.sub(r'"(\d+),(\d+)"', r'\1:\2', line)
+            fields = re.sub(r'(?!(([^"]*"){2})*[^"]*$),', '', line)
             fields = fields.split(',')
             genres = fields[2]
             genres = genres.strip('\n')
@@ -30,8 +31,7 @@ def loadMovieGenres():
     return movieGenres
 
 def parseRating(line):
-    fields = re.sub(r'"(\d+),(\d+)"', r'\1:\2', line)
-    fields = fields.split(',')
+    fields = line.split(',')
     movieId = int(fields[1])
     rating = float(fields[2])
     return (movieId, rating)
