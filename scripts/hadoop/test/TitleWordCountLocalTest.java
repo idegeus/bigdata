@@ -23,7 +23,7 @@ public class TitleWordCountLocalTest extends HadoopLocalTestCase {
         File outputDir = getTestTempDir("output");
         outputDir.delete();
 
-        writeLines(inputFile, readLines("/movies.csv"));
+        writeLines(inputFile, readLines("/ml-latest/movies.csv"));
 
         job.runLocal(new String[]{"--input", inputFile.getAbsolutePath(),
         "--output", outputDir.getAbsolutePath()});

@@ -23,20 +23,20 @@ public class RatingBroadcastJoinLocalTest extends HadoopLocalTestCase {
         File outputDir = getTestTempDir("output");
         outputDir.delete();
 
-        writeLines(moviesFile, readLines("/movies.csv"));
-        writeLines(ratingsFile, readLines("/ratings.csv"));
+        writeLines(moviesFile, readLines("/ml-latest/movies.csv"));
+        writeLines(ratingsFile, readLines("/ml-latest/ratings.csv"));
 
         job.runLocal(new String[]{"--movies", moviesFile.getAbsolutePath(),
         "--ratings", ratingsFile.getAbsolutePath(), "--output", outputDir.getAbsolutePath()});
 
         String outputFilename = mapOnly ? "part-m-00000" : "part-r-00000";
-
+        
         Map<String, Double> ratingsByGenre = readRatingsByGenre(new File(outputDir, outputFilename));
-
+        
         for (String genre : ratingsByGenre.keySet()) {
             System.out.println(genre + ":" + ratingsByGenre.get(genre));
         }
-
+        
     }
 
     Map<String, Double> readRatingsByGenre(File outputFile) throws IOException {
