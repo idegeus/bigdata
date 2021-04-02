@@ -6,8 +6,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
@@ -16,20 +14,12 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 public class RatingBroadcastJoin extends HadoopJob {
@@ -66,7 +56,7 @@ public class RatingBroadcastJoin extends HadoopJob {
     
     static class MovieJoiner extends Mapper<Object, Text, Text, DoubleWritable> {
 
-        private static final Pattern sep = Pattern.compile(",");
+        private static final Pattern sep = Pattern.compile(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
         private static final Map<Integer, String> movies = new HashMap<>();
         private final Text result = new Text();
 
@@ -77,8 +67,9 @@ public class RatingBroadcastJoin extends HadoopJob {
 
             try (BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(moviesFile))))) {
                 String line;
-                
+
                 while ((line = br.readLine()) != null) {
+                    //String[] row = sep.split(line);
                     String[] row = sep.split(line.replaceAll("\".*\"", "removed title"));
                     int movieId = Integer.parseInt(row[0]);
                     String title = row[1].toLowerCase().replaceAll("[^a-zA-Z ]", "");
@@ -107,7 +98,7 @@ public class RatingBroadcastJoin extends HadoopJob {
 
     static class AverageReducer extends Reducer<Text, DoubleWritable, Text, DoubleWritable> {
 
-        private static final Multimap<String, Double[]> ratings = HashMultimap.create();
+        private static final Map<String, Double[]> ratings = new HashMap<>();
         private final Text result = new Text();
 
         public void reduce(Text key, Iterable<DoubleWritable> values, Context context) throws IOException, InterruptedException {
@@ -116,12 +107,11 @@ public class RatingBroadcastJoin extends HadoopJob {
                 Double rating = val.get();
 
                 if (ratings.containsKey(genre)) {
-                    for (Double[] s : ratings.get(genre)) {
-                        s[0] += rating;
-                        s[1] += 1.0;
-                        result.set(genre);
-                        context.write(result, new DoubleWritable(s[0] / s[1]));
-                    }
+                    Double[] s = ratings.get(genre);
+                    s[0] += rating;
+                    s[1] += 1.0;
+                    result.set(genre);
+                    context.write(result, new DoubleWritable(s[0] / s[1]));
                 } else {
                     ratings.put(genre, new Double[]{rating, 1.0});
                     result.set(genre);
